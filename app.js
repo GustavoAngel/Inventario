@@ -236,3 +236,10 @@ function borrarBaseDeDatos() {
         alert("Cierre todas las pestañas abiertas para borrar la base de datos.");
     };
 }
+
+function navegar() {
+    url='/demo.html';
+  window.location.href = url;
+}
+
+// Llamar a la función para navegar a una página interna del sitio
