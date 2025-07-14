@@ -93,15 +93,29 @@ function mostrarProductos() {
     lista.innerHTML = "";
     selector.innerHTML = "";
 
+    let categoriasMap = {};
+
     let txn = db.transaction("productos", "readonly");
     let store = txn.objectStore("productos");
     store.openCursor().onsuccess = (event) => {
         let cursor = event.target.result;
         if (cursor) {
             let producto = cursor.value;
-            lista.innerHTML += `<p><b>${producto.nombre}</b> (${producto.categoria}): ${producto.stock} unidades</p>`;
-            selector.innerHTML += `<option value="${producto.id}">${producto.nombre}</option>`;
+            if (!categoriasMap[producto.categoria]) {
+                categoriasMap[producto.categoria] = [];
+            }
+            categoriasMap[producto.categoria].push(producto);
             cursor.continue();
+        } else {
+            for (let categoria in categoriasMap) {
+                lista.innerHTML += `<h3>${categoria}</h3>`;
+                let productos = categoriasMap[categoria];
+                productos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+                productos.forEach(producto => {
+                    lista.innerHTML += `<p><b>${producto.nombre}</b> : ${producto.stock} pza</p>`;
+                    selector.innerHTML += `<option value="${producto.id}">${producto.nombre}</option>`;
+                });
+            }
         }
     };
 }
@@ -140,8 +154,6 @@ function mostrarHistorial() {
     };
 }
 
-
-
 function mostrarPantallaInventario() {
     let container = document.getElementById("pantalla-inventario");
     container.innerHTML = "";
@@ -152,6 +164,7 @@ function mostrarPantallaInventario() {
     let store = txn.objectStore("productos");
 
     store.openCursor().onsuccess = (event) => {
+        debugger;
         let cursor = event.target.result;
         if (cursor) {
             let producto = cursor.value;
@@ -198,9 +211,6 @@ function registrarConteo(productoId) {
     parent.removeChild(tile);
     parent.appendChild(tile);
 }
-
-
-
 // Botón para borrar la base de datos
 function borrarBaseDeDatos() {
     db.close();
@@ -219,19 +229,15 @@ function borrarBaseDeDatos() {
         alert("Cierre todas las pestañas abiertas para borrar la base de datos.");
     };
 }
-
 function navegar() {
     url='/demo.html';
   window.location.href = url;
 }
-
 // Llamar a la función para navegar a una página interna del sitio
-
-
 function compararInventarios(fecha1, fecha2) {
     let txnHist = db.transaction("inventariosHistorial", "readonly");
     let storeHist = txnHist.objectStore("inventariosHistorial");
-debugger;
+
     let request1 = storeHist.get(fecha1);
     let request2 = storeHist.get(fecha2);
 
