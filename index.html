@@ -18,6 +18,12 @@
 
     <section>
         <h2>Agregar Producto</h2>
+        <select id="movimiento-categoria-producto">
+            <option value="helados">Helados</option>
+            <option value="postres">Postres</option>
+            <option value="bebidas">Bebidas</option>
+            <option value="otros">Otros</option>
+        </select>
         <input id="producto-nombre" type="text" placeholder="Nombre del producto">
         <input id="producto-stock" type="number" placeholder="Stock inicial">
         <button onclick="agregarProducto()">Agregar</button>

@@ -3,7 +3,7 @@
     "short_name": "Inventario",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#ffffff",
+    "background_color": "#4DC0B5",
     "theme_color": "#4CAF50",
     "icons": [
         {
