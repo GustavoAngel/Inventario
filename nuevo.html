@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documento Nuevo</title>
+        <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #menu {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            align-items: center;
+            background-color: #1976d2;
+            padding: 0.5em 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        #menu button {
+            flex: 1 1 0;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.1em;
+            padding: 0.8em 0.2em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        #menu button:active,
+        #menu button:focus {
+            background: #1565c0;
+            outline: none;
+        }
+        @media (max-width: 600px) {
+            #menu {
+                flex-direction: column;
+                padding: 0.2em 0;
+            }
+            #menu button {
+                font-size: 1em;
+                padding: 1em 0;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav id="menu">
+        <button onclick="mostrarPantalla('pantalla-productos')">Productos</button>
+        <button onclick="mostrarPantalla('pantalla-movimientos')">Movimientos</button>
+        <button onclick="mostrarPantalla('pantalla-inventario')">Inventario</button>
+        <button onclick="mostrarPantalla('pantalla-comparacion')">Comparación</button>
+    </nav>
+
+    <section id="pantalla-productos" class="pantalla hidden">
+        <!-- Formulario para agregar productos -->
+    </section>
+
+    <section id="pantalla-movimientos" class="pantalla hidden">
+        <!-- Formulario para registrar movimientos -->
+    </section>
+
+    <section id="pantalla-inventario" class="pantalla hidden">
+        <!-- Pantalla de tiles de inventario -->
+    </section>
+
+    <section id="pantalla-comparacion" class="pantalla hidden">
+        <!-- Pantalla para listar y comparar inventarios -->
+    </section>
+</body>
+</html>

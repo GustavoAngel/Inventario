@@ -15,6 +15,8 @@ window.onload = () => {
         db = event.target.result;
         mostrarProductos();
         mostrarHistorial();
+        listarInventariosRealizados();
+        //mostrarPantallaInventario();
     };
 
     request.onupgradeneeded = (event) => {
@@ -261,11 +263,11 @@ debugger;
                     let tabla = `<table border='1'><tr><th>Producto</th><th>${fecha1}</th><th>${fecha2}</th><th>Diferencia</th><th>Total $${fecha2}</th></tr>`;
                     let totalGeneral = 0;
                     for (let id in comparacion) {
-                        let producto = productosMap[id] || { nombre: "Desconocido", precio: 0 };
+                        let producto = productosMap[id] || { nombre: "Desconocido", precioVenta: 0 };
                         let c1 = comparacion[id].cantidad1;
                         let c2 = comparacion[id].cantidad2;
                         let diff = c2 - c1;
-                        let totalProducto = (producto.precio || 0) * c2;
+                        let totalProducto = (producto.precioVenta || 0) * c2;
                         totalGeneral += totalProducto;
                         tabla += `<tr><td>${producto.nombre}</td><td>${c1}</td><td>${c2}</td><td>${diff}</td><td>$${totalProducto.toFixed(2)}</td></tr>`;
                     }
@@ -386,45 +388,99 @@ function compararInventariosPorID(id1, id2) {
         request2.onsuccess = () => {
             let inventario1 = request1.result ? request1.result.inventario : [];
             let inventario2 = request2.result ? request2.result.inventario : [];
+            let fechaHora1 = request1.result ? new Date(request1.result.hora) : null;
+            let fechaHora2 = request2.result ? new Date(request2.result.hora) : null;
 
-            let fecha1 = request1.result ? request1.result.fecha : "";
-            let fecha2 = request2.result ? request2.result.fecha : "";
-            
             let comparacion = {};
-            inventario1.forEach(i => comparacion[i.productoId] = { cantidad1: i.cantidad, cantidad2: 0 });
+            inventario1.forEach(i => comparacion[i.productoId] = { stockA: i.cantidad, stockB: 0, entradas: 0, salidas: 0, mermas: 0 });
             inventario2.forEach(i => {
                 if (comparacion[i.productoId]) {
-                    comparacion[i.productoId].cantidad2 = i.cantidad;
+                    comparacion[i.productoId].stockB = i.cantidad;
                 } else {
-                    comparacion[i.productoId] = { cantidad1: 0, cantidad2: i.cantidad };
+                    comparacion[i.productoId] = { stockA: 0, stockB: i.cantidad, entradas: 0, salidas: 0, mermas: 0 };
                 }
             });
 
-            let txnProd = db.transaction("productos", "readonly");
-            let storeProd = txnProd.objectStore("productos");
+            let txnMov = db.transaction("movimientos", "readonly");
+            let storeMov = txnMov.objectStore("movimientos");
+            let movimientosRelevantes = [];
 
-            let productosMap = {};
-            storeProd.openCursor().onsuccess = (event) => {
+            storeMov.openCursor().onsuccess = (event) => {
                 let cursor = event.target.result;
                 if (cursor) {
-                    productosMap[cursor.value.id] = cursor.value;
+                    let mov = cursor.value;
+                    let fechaMov = new Date(mov.fecha);
+                    if (fechaHora1 && fechaHora2 && fechaMov >= fechaHora1 && fechaMov <= fechaHora2) {
+                        movimientosRelevantes.push(mov);
+                    }
                     cursor.continue();
                 } else {
-                    let tabla = `<table border='1'><tr><th>Producto</th><th>${fecha1}</th><th>${fecha2}</th><th>Diferencia</th><th>Total $${fecha2}</th></tr>`;
-                    let totalGeneral = 0;
-                    for (let id in comparacion) {
-                        let producto = productosMap[id] || { nombre: "Desconocido", precio: 0 };
-                        let c1 = comparacion[id].cantidad1;
-                        let c2 = comparacion[id].cantidad2;
-                        let diff = c2 - c1;
-                        let totalProducto = (producto.precio || 0) * c2;
-                        totalGeneral += totalProducto;
-                        tabla += `<tr><td>${producto.nombre}</td><td>${c1}</td><td>${c2}</td><td>${diff}</td><td>$${totalProducto.toFixed(2)}</td></tr>`;
-                    }
-                    tabla += `<tr><td colspan='4'><b>Total General</b></td><td><b>$${totalGeneral.toFixed(2)}</b></td></tr></table>`;
-                    document.getElementById("resultado-comparacion").innerHTML = tabla;
+                    movimientosRelevantes.forEach(mov => {
+                        if (!comparacion[mov.productoId]) {
+                            comparacion[mov.productoId] = { stockA: 0, stockB: 0, entradas: 0, salidas: 0, mermas: 0 };
+                        }
+                        if (mov.tipo === "entrada") comparacion[mov.productoId].entradas += mov.cantidad;
+                        if (mov.tipo === "salida") comparacion[mov.productoId].salidas += mov.cantidad;
+                        if (mov.tipo === "merma") comparacion[mov.productoId].mermas += mov.cantidad;
+                    });
+
+                    let txnProd = db.transaction("productos", "readonly");
+                    let storeProd = txnProd.objectStore("productos");
+                    let productosMap = {};
+
+                    storeProd.openCursor().onsuccess = (event) => {
+                        let cursor = event.target.result;
+                        if (cursor) {
+                            productosMap[cursor.value.id] = cursor.value;
+                            cursor.continue();
+                        } else {
+                            let categoriasMap = {};
+                            for (let id in comparacion) {
+                                let datos = comparacion[id];
+                                let producto = productosMap[id] || { nombre: "Desconocido", categoria: "Sin categoría", precioVenta: 0 };
+                                let ventasReales = (datos.stockA + datos.entradas) - (datos.stockB + datos.mermas);
+                                let subtotal = ventasReales * producto.precioVenta;
+
+                                if (!categoriasMap[producto.categoria]) {
+                                    categoriasMap[producto.categoria] = { subtotal: 0, productos: [] };
+                                }
+                                categoriasMap[producto.categoria].subtotal += subtotal;
+                                categoriasMap[producto.categoria].productos.push({
+                                    nombre: producto.nombre,
+                                    datos,
+                                    ventasReales,
+                                    subtotal
+                                });
+                            }
+
+                            let totalGeneral = 0;
+                            let tabla = "";
+                            for (let categoria in categoriasMap) {
+                                tabla += `<h3>${categoria}</h3>`;
+                                tabla += `<table border='1'><tr><th>Producto</th><th>Stock A</th><th>Entradas</th><th>Salidas</th><th>Mermas</th><th>Stock B</th><th>Ventas Reales</th><th>Sub total</th></tr>`;
+                                categoriasMap[categoria].productos.forEach(p => {
+                                    tabla += `<tr>
+                                        <td>${p.nombre}</td>
+                                        <td>${p.datos.stockA}</td>
+                                        <td>${p.datos.entradas}</td>
+                                        <td>${p.datos.salidas}</td>
+                                        <td>${p.datos.mermas}</td>
+                                        <td>${p.datos.stockB}</td>
+                                        <td>${p.ventasReales}</td>
+                                        <td>$${p.subtotal.toFixed(2)}</td>
+                                    </tr>`;
+                                });
+                                tabla += `<tr><td colspan='7' style='text-align:right;'><strong>Subtotal ${categoria}:</strong></td><td><strong>$${categoriasMap[categoria].subtotal.toFixed(2)}</strong></td></tr>`;
+                                tabla += `</table>`;
+                                totalGeneral += categoriasMap[categoria].subtotal;
+                            }
+                            tabla += `<h2>Total General: $${totalGeneral.toFixed(2)}</h2>`;
+                            document.getElementById("resultado-comparacion").innerHTML = tabla;
+                        }
+                    };
                 }
             };
         };
     };
 }
+
