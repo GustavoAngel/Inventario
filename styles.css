@@ -64,3 +64,24 @@ button:hover {
 .tile:hover {
     transform: scale(1.05);
 }
+
+
+ #lista-inventarios-realizados div {
+        background-color: #f0f0f0;
+        padding: 10px;
+        border-radius: 10px;
+        min-width: 150px;
+        text-align: center;
+        font-size: 14px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .inicio-seleccionado {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.fin-seleccionado {
+    background-color: #2196F3;
+    color: white;
+}

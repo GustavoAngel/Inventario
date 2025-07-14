@@ -1,6 +1,8 @@
 // app.js
 
 let db;
+let inventarioInicioSeleccionado = null;
+let inventarioFinSeleccionado = null;
 
 window.onload = () => {
     let request = indexedDB.open("inventarioDB", 2);
@@ -26,6 +28,10 @@ window.onload = () => {
         if (!db.objectStoreNames.contains("inventarioTemporal")) {
             db.createObjectStore("inventarioTemporal", { keyPath: "productoId" });
         }
+        if (!db.objectStoreNames.contains("inventariosHistorial")) {
+            db.createObjectStore("inventariosHistorial", { keyPath: "id", autoIncrement: true });
+        }
+        
     };
 };
 
@@ -34,10 +40,16 @@ function agregarProducto() {
     let nombre = document.getElementById("producto-nombre").value;
     let stock = parseInt(document.getElementById("producto-stock").value);
     let categoria = document.getElementById("movimiento-categoria-producto").value;
+    let precioVenta = parseFloat(document.getElementById("producto-precio-venta").value);
+    
+    if (!nombre || isNaN(stock) || !categoria || isNaN(precioVenta)) {
+        alert("Por favor, complete todos los campos correctamente.");
+        return;
+    }
 
     let txn = db.transaction("productos", "readwrite");
     let store = txn.objectStore("productos");
-    store.add({ nombre: nombre, stock: stock, categoria: categoria });
+    store.add({ nombre: nombre, stock: stock, categoria: categoria, precioVenta: precioVenta });
 
     txn.oncomplete = () => {
         document.getElementById("producto-nombre").value = "";
@@ -185,38 +197,7 @@ function registrarConteo(productoId) {
     parent.appendChild(tile);
 }
 
-function finalizarInventario() {
-    let txnTemp = db.transaction("inventarioTemporal", "readonly");
-    let storeTemp = txnTemp.objectStore("inventarioTemporal");
 
-    let registros = [];
-
-    storeTemp.openCursor().onsuccess = (event) => {
-        let cursor = event.target.result;
-        if (cursor) {
-            registros.push(cursor.value);
-            cursor.continue();
-        } else {
-            let txnProd = db.transaction("productos", "readwrite");
-            let storeProd = txnProd.objectStore("productos");
-            registros.forEach(r => {
-                let request = storeProd.get(r.productoId);
-                request.onsuccess = () => {
-                    let producto = request.result;
-                    producto.stock = r.cantidad;
-                    storeProd.put(producto);
-                };
-            });
-
-            txnProd.oncomplete = () => {
-                let clearTxn = db.transaction("inventarioTemporal", "readwrite");
-                clearTxn.objectStore("inventarioTemporal").clear();
-                mostrarProductos();
-                alert("Inventario finalizado y actualizado");
-            };
-        }
-    };
-}
 
 // Botón para borrar la base de datos
 function borrarBaseDeDatos() {
@@ -243,3 +224,207 @@ function navegar() {
 }
 
 // Llamar a la función para navegar a una página interna del sitio
+
+
+function compararInventarios(fecha1, fecha2) {
+    let txnHist = db.transaction("inventariosHistorial", "readonly");
+    let storeHist = txnHist.objectStore("inventariosHistorial");
+debugger;
+    let request1 = storeHist.get(fecha1);
+    let request2 = storeHist.get(fecha2);
+
+    request1.onsuccess = () => {
+        request2.onsuccess = () => {
+            let inventario1 = request1.result ? request1.result.inventario : [];
+            let inventario2 = request2.result ? request2.result.inventario : [];
+            
+            let comparacion = {};
+            inventario1.forEach(i => comparacion[i.productoId] = { cantidad1: i.cantidad, cantidad2: 0 });
+            inventario2.forEach(i => {
+                if (comparacion[i.productoId]) {
+                    comparacion[i.productoId].cantidad2 = i.cantidad;
+                } else {
+                    comparacion[i.productoId] = { cantidad1: 0, cantidad2: i.cantidad };
+                }
+            });
+
+            let txnProd = db.transaction("productos", "readonly");
+            let storeProd = txnProd.objectStore("productos");
+
+            let productosMap = {};
+            storeProd.openCursor().onsuccess = (event) => {
+                let cursor = event.target.result;
+                if (cursor) {
+                    productosMap[cursor.value.id] = cursor.value;
+                    cursor.continue();
+                } else {
+                    let tabla = `<table border='1'><tr><th>Producto</th><th>${fecha1}</th><th>${fecha2}</th><th>Diferencia</th><th>Total $${fecha2}</th></tr>`;
+                    let totalGeneral = 0;
+                    for (let id in comparacion) {
+                        let producto = productosMap[id] || { nombre: "Desconocido", precio: 0 };
+                        let c1 = comparacion[id].cantidad1;
+                        let c2 = comparacion[id].cantidad2;
+                        let diff = c2 - c1;
+                        let totalProducto = (producto.precio || 0) * c2;
+                        totalGeneral += totalProducto;
+                        tabla += `<tr><td>${producto.nombre}</td><td>${c1}</td><td>${c2}</td><td>${diff}</td><td>$${totalProducto.toFixed(2)}</td></tr>`;
+                    }
+                    tabla += `<tr><td colspan='4'><b>Total General</b></td><td><b>$${totalGeneral.toFixed(2)}</b></td></tr></table>`;
+                    document.getElementById("resultado-comparacion").innerHTML = tabla;
+                }
+            };
+        };
+    };
+}
+
+function finalizarInventario() {
+    let txnTemp = db.transaction("inventarioTemporal", "readonly");
+    let storeTemp = txnTemp.objectStore("inventarioTemporal");
+
+    let registros = [];
+
+    storeTemp.openCursor().onsuccess = (event) => {
+        let cursor = event.target.result;
+        if (cursor) {
+            registros.push(cursor.value);
+            cursor.continue();
+        } else {
+            let txnProd = db.transaction("productos", "readwrite");
+            let storeProd = txnProd.objectStore("productos");
+            registros.forEach(r => {
+                let request = storeProd.get(r.productoId);
+                request.onsuccess = () => {
+                    let producto = request.result;
+                    producto.stock = r.cantidad;
+                    storeProd.put(producto);
+                };
+            });
+
+            txnProd.oncomplete = () => {
+                let fecha = new Date().toISOString().split('T')[0];
+                let hora = new Date().toISOString();
+                let datosDelDia = { fecha: fecha, hora: hora, inventario: registros };
+                let txnHist = db.transaction("inventariosHistorial", "readwrite");
+                txnHist.objectStore("inventariosHistorial").add(datosDelDia);
+
+                let clearTxn = db.transaction("inventarioTemporal", "readwrite");
+                clearTxn.objectStore("inventarioTemporal").clear();
+                mostrarProductos();
+                alert("Inventario finalizado, actualizado y guardado en historial.");
+                listarInventariosRealizados();
+            };
+        }
+    };
+}
+
+function listarInventariosRealizados() {
+    let container = document.getElementById("lista-inventarios-realizados");
+    if (!container) return;
+    container.innerHTML = "";
+
+    let txn = db.transaction("inventariosHistorial", "readonly");
+    let store = txn.objectStore("inventariosHistorial");
+
+    store.getAll().onsuccess = (event) => {
+        let registros = event.target.result;
+        registros.sort((a, b) => new Date(b.hora) - new Date(a.hora));
+
+        registros.forEach(reg => {
+            let item = document.createElement("div");
+            item.className = "tile-inventario";
+            item.textContent = `${reg.fecha} ${new Date(reg.hora).toLocaleTimeString()} (ID ${reg.id})`;
+            item.onclick = () => seleccionarInventario(reg.id, item);
+            container.appendChild(item);
+        });
+
+        if (registros.length >= 2) {
+            let select1 = document.getElementById("inventario-inicio");
+            let select2 = document.getElementById("inventario-fin");
+            select1.innerHTML = "";
+            select2.innerHTML = "";
+            registros.forEach(reg => {
+                let option1 = document.createElement("option");
+                option1.value = reg.id;
+                option1.textContent = `${reg.fecha} ${new Date(reg.hora).toLocaleTimeString()} (ID ${reg.id})`;
+                select1.appendChild(option1);
+
+                let option2 = document.createElement("option");
+                option2.value = reg.id;
+                option2.textContent = `${reg.fecha} ${new Date(reg.hora).toLocaleTimeString()} (ID ${reg.id})`;
+                select2.appendChild(option2);
+            });
+        }
+    };
+}
+
+function seleccionarInventario(id, elemento) {
+    const inicioSelect = document.getElementById("inventario-inicio");
+    const finSelect = document.getElementById("inventario-fin");
+    const tiles = document.querySelectorAll(".tile-inventario");
+
+    tiles.forEach(tile => tile.classList.remove("inicio-seleccionado", "fin-seleccionado"));
+
+    if (inventarioInicioSeleccionado === null) {
+        inventarioInicioSeleccionado = id;
+        inicioSelect.value = id;
+        elemento.classList.add("inicio-seleccionado");
+    } else {
+        inventarioFinSeleccionado = id;
+        finSelect.value = id;
+        elemento.classList.add("fin-seleccionado");
+    }
+}
+
+function compararInventariosPorID(id1, id2) {
+    let txnHist = db.transaction("inventariosHistorial", "readonly");
+    let storeHist = txnHist.objectStore("inventariosHistorial");
+
+    let request1 = storeHist.get(Number(id1));
+    let request2 = storeHist.get(Number(id2));
+
+    request1.onsuccess = () => {
+        request2.onsuccess = () => {
+            let inventario1 = request1.result ? request1.result.inventario : [];
+            let inventario2 = request2.result ? request2.result.inventario : [];
+
+            let fecha1 = request1.result ? request1.result.fecha : "";
+            let fecha2 = request2.result ? request2.result.fecha : "";
+            
+            let comparacion = {};
+            inventario1.forEach(i => comparacion[i.productoId] = { cantidad1: i.cantidad, cantidad2: 0 });
+            inventario2.forEach(i => {
+                if (comparacion[i.productoId]) {
+                    comparacion[i.productoId].cantidad2 = i.cantidad;
+                } else {
+                    comparacion[i.productoId] = { cantidad1: 0, cantidad2: i.cantidad };
+                }
+            });
+
+            let txnProd = db.transaction("productos", "readonly");
+            let storeProd = txnProd.objectStore("productos");
+
+            let productosMap = {};
+            storeProd.openCursor().onsuccess = (event) => {
+                let cursor = event.target.result;
+                if (cursor) {
+                    productosMap[cursor.value.id] = cursor.value;
+                    cursor.continue();
+                } else {
+                    let tabla = `<table border='1'><tr><th>Producto</th><th>${fecha1}</th><th>${fecha2}</th><th>Diferencia</th><th>Total $${fecha2}</th></tr>`;
+                    let totalGeneral = 0;
+                    for (let id in comparacion) {
+                        let producto = productosMap[id] || { nombre: "Desconocido", precio: 0 };
+                        let c1 = comparacion[id].cantidad1;
+                        let c2 = comparacion[id].cantidad2;
+                        let diff = c2 - c1;
+                        let totalProducto = (producto.precio || 0) * c2;
+                        totalGeneral += totalProducto;
+                        tabla += `<tr><td>${producto.nombre}</td><td>${c1}</td><td>${c2}</td><td>${diff}</td><td>$${totalProducto.toFixed(2)}</td></tr>`;
+                    }
+                    tabla += `<tr><td colspan='4'><b>Total General</b></td><td><b>$${totalGeneral.toFixed(2)}</b></td></tr></table>`;
+                    document.getElementById("resultado-comparacion").innerHTML = tabla;
+                }
+            };
+        };
+    };
+}
