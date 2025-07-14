@@ -25,10 +25,11 @@ window.onload = () => {
 function agregarProducto() {
     let nombre = document.getElementById("producto-nombre").value;
     let stock = parseInt(document.getElementById("producto-stock").value);
+    let categoria = document.getElementById("movimiento-categoria-producto").value;
 
     let txn = db.transaction("productos", "readwrite");
     let store = txn.objectStore("productos");
-    store.add({ nombre: nombre, stock: stock });
+    store.add({ nombre: nombre, stock: stock, categoria: categoria });
 
     txn.oncomplete = () => {
         document.getElementById("producto-nombre").value = "";
@@ -76,7 +77,7 @@ function mostrarProductos() {
         let cursor = event.target.result;
         if (cursor) {
             let producto = cursor.value;
-            lista.innerHTML += `<p><b>${producto.nombre}</b>: ${producto.stock} unidades</p>`;
+            lista.innerHTML += `<p><b>${producto.nombre}</b> (${producto.categoria}): ${producto.stock} unidades</p>`;
             selector.innerHTML += `<option value="${producto.id}">${producto.nombre}</option>`;
             cursor.continue();
         }
@@ -89,6 +90,7 @@ function mostrarHistorial() {
 
     let txn = db.transaction("movimientos", "readonly");
     let store = txn.objectStore("movimientos");
+
     store.openCursor(null, 'prev').onsuccess = (event) => {
         let cursor = event.target.result;
         if (cursor) {
