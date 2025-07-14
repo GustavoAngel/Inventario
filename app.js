@@ -217,3 +217,22 @@ function finalizarInventario() {
         }
     };
 }
+
+// Botón para borrar la base de datos
+function borrarBaseDeDatos() {
+    db.close();
+    let deleteRequest = indexedDB.deleteDatabase("inventarioDB");
+
+    deleteRequest.onsuccess = () => {
+        alert("Base de datos eliminada correctamente.");
+        location.reload();
+    };
+
+    deleteRequest.onerror = () => {
+        alert("Error al eliminar la base de datos.");
+    };
+
+    deleteRequest.onblocked = () => {
+        alert("Cierre todas las pestañas abiertas para borrar la base de datos.");
+    };
+}
