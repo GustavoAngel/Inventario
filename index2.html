@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Inventario Heladería</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js');
+        }
+    </script>
+</head>
+<body>
+    <h1>Inventario de Productos Terminados</h1>
+
+    <section>
+        <h2>Agregar Producto</h2>
+        <select id="movimiento-categoria-producto">
+            <option value="Helados">Helados</option>
+            <option value="Paletas-crema">Paletas Crema</option>
+            <option value="Paletas-agua">Paletas Agua</option>
+            <option value="Paletas-chica">Paletas Chica</option>
+            <option value="Bebidas">Bebidas</option>
+            <option value="Otros">Otros</option>
+        </select>
+        <input id="producto-nombre" type="text" placeholder="Nombre del producto">
+        <input id="producto-stock" type="number" placeholder="Stock inicial">
+        <button onclick="agregarProducto()">Agregar</button>
+    </section>
+
+    <section>
+        <h2>Inventario</h2>
+        <div id="lista-productos"></div>
+    </section>
+
+    <section>
+        <h2>Registrar Movimiento</h2>
+        <select id="movimiento-producto"></select>
+        <select id="movimiento-tipo">
+            <option value="entrada">Entrada</option>
+            <option value="salida">Salida</option>
+            <option value="merma">Merma</option>
+        </select>
+        <input id="movimiento-cantidad" type="number" placeholder="Cantidad">
+        <button onclick="registrarMovimiento()">Registrar</button>
+    </section>
+
+    <section>
+        <h2>Historial</h2>
+        <div id="historial-movimientos"></div>
+    </section>
+
+    <section>
+        <h2>Realizar Inventario Físico</h2>
+        <button onclick="mostrarPantallaInventario()">Iniciar Inventario</button>
+        <div id="pantalla-inventario" class="tiles-container"></div>
+        <button onclick="finalizarInventario()">Finalizar Inventario</button>
+    </section>
+
+    <button onclick="borrarBaseDeDatos()">Borrar Base de Datos</button>
+    <button onclick="navegar()">Moviles</button>
+
+
+    <footer>
+        <p>© 2025 Inventario Heladería</p>
+    </footer>
+</body>
+</html>
