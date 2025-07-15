@@ -495,6 +495,8 @@ function mostrarPantalla(id) {
     document.getElementById(id).classList.add('visible');
 }
 
+mostrarPantalla('pantalla-inventariomain'); // Mostrar pantalla de inventario al cargar
+
  document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
