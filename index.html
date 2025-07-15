@@ -72,6 +72,26 @@
         <div id="historial-movimientos"></div> -->
     </section>
 
+    <section id="pantalla-gastos" class="pantalla">
+        <h2>Registro de Gastos</h2>
+        <input type="text" id="gasto-descripcion" placeholder="Descripción del gasto">
+        <input type="number" id="gasto-monto" placeholder="Monto">
+        <select id="gasto-categoria">
+            <option value="Materia Prima">Materia Prima</option>
+            <option value="Servicios">Servicios</option>
+            <option value="Mantenimiento">Mantenimiento</option>
+            <option value="Otros">Otros</option>
+        </select>
+        <button onclick="registrarGasto()">Registrar Gasto</button>
+
+        <h3>Filtrar Gastos</h3>
+        <input type="date" id="gasto-fecha-inicio">
+        <input type="date" id="gasto-fecha-fin">
+        <button onclick="listarGastosPorRango()">Buscar</button>
+
+        <h3>Gastos Listados</h3>
+        <div id="lista-gastos"></div>
+    </section>
 
 
 
@@ -113,10 +133,18 @@
     </div>
     </section>
 
-    <button onclick="borrarBaseDeDatos()" style="display: none;">Borrar Base de Datos</button>
+    <button onclick="borrarBaseDeDatos()" style="display: block;">Borrar Base de Datos</button>
 
     <nav class="mobile-nav">
-        <ul style="display: contents;"> 
+        <ul style="display: contents;">
+            <li class="nav-item">
+                <a href="#pantalla-gastos" class="nav-link" data-target="pantalla-gastos">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 1v22M5 12h14"></path>
+                    </svg>
+                    <span>Gastos</span>
+                </a>
+            </li> 
             <li class="nav-item">
                 <a href="#pantalla-inventario" class="nav-link" data-target="pantalla-inventariomain">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -140,7 +168,7 @@
                     <span>Productos</span>
                 </a>
             </li>
-            
+
             <li class="nav-item">
                 <a href="#pantalla-movimientos" class="nav-link" data-target="pantalla-movimientos">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

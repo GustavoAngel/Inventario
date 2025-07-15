@@ -16,7 +16,10 @@ window.onload = () => {
         mostrarProductos();
         mostrarHistorial();
         listarInventariosRealizados();
+        listarGastosPorRango();
         //mostrarPantallaInventario();
+        establecerFechasPorDefecto();
+        listarGastosPorRango();
     };
 
     request.onupgradeneeded = (event) => {
@@ -32,6 +35,9 @@ window.onload = () => {
         }
         if (!db.objectStoreNames.contains("inventariosHistorial")) {
             db.createObjectStore("inventariosHistorial", { keyPath: "id", autoIncrement: true });
+        }
+        if (!db.objectStoreNames.contains("gastos")) {
+            db.createObjectStore("gastos", { keyPath: "id", autoIncrement: true });
         }
         
     };
@@ -52,7 +58,7 @@ function agregarProducto() {
     let txn = db.transaction("productos", "readwrite");
     let store = txn.objectStore("productos");
     store.add({ nombre: nombre, stock: stock, categoria: categoria, precioVenta: precioVenta });
-
+    mostrarToast("Producto agregado correctamente.");
     txn.oncomplete = () => {
         document.getElementById("producto-nombre").value = "";
         document.getElementById("producto-stock").value = "";
@@ -503,4 +509,81 @@ mostrarPantalla('pantalla-inventariomain'); // Mostrar pantalla de inventario al
             const target = link.getAttribute('data-target');
             mostrarPantalla(target);
         });
-    });
+});
+
+function registrarGasto() {
+    const descripcion = document.getElementById("gasto-descripcion").value;
+    const monto = parseFloat(document.getElementById("gasto-monto").value);
+    const categoria = document.getElementById("gasto-categoria").value;
+    const fechaHora = new Date().toISOString();
+
+    if (!descripcion || isNaN(monto) || monto <= 0) {
+        alert("Completa correctamente los datos del gasto.");
+        return;
+    }
+
+    let gasto = { descripcion, monto, categoria, fechaHora };
+
+    let txn = db.transaction("gastos", "readwrite");
+    txn.objectStore("gastos").add(gasto);
+
+    txn.oncomplete = () => {
+        listarGastosPorRango();
+        document.getElementById("gasto-descripcion").value = "";
+        document.getElementById("gasto-monto").value = "";
+    };
+}
+
+function listarGastosPorRango() {
+    let container = document.getElementById("lista-gastos");
+    container.innerHTML = "";
+
+    const fechaInicio = new Date(document.getElementById("gasto-fecha-inicio").value);
+    const fechaFin = new Date(document.getElementById("gasto-fecha-fin").value);
+    fechaFin.setHours(23,59,59,999);
+
+    if (isNaN(fechaInicio.getTime()) || isNaN(fechaFin.getTime())) {
+        return;
+    }
+
+    let txn = db.transaction("gastos", "readonly");
+    let store = txn.objectStore("gastos");
+
+    store.openCursor().onsuccess = (event) => {
+        let cursor = event.target.result;
+        if (cursor) {
+            let gasto = cursor.value;
+            let fechaGasto = new Date(gasto.fechaHora);
+            if (fechaGasto >= fechaInicio && fechaGasto <= fechaFin) {
+                container.innerHTML += `<p>${gasto.fechaHora.split('T')[0]} - ${gasto.descripcion} (${gasto.categoria}): $${gasto.monto.toFixed(2)}</p>`;
+            }
+            cursor.continue();
+        }
+    };
+}
+
+function establecerFechasPorDefecto() {
+    const ahora = new Date();
+    const diaSemana = ahora.getDay();
+    const lunes = new Date(ahora);
+    lunes.setDate(ahora.getDate() - ((diaSemana + 6) % 7));
+    lunes.setHours(0,0,0,0);
+    const domingo = new Date(lunes);
+    domingo.setDate(lunes.getDate() + 6);
+    domingo.setHours(23,59,59,999);
+
+    document.getElementById("gasto-fecha-inicio").value = lunes.toISOString().split("T")[0];
+    document.getElementById("gasto-fecha-fin").value = domingo.toISOString().split("T")[0];
+}
+
+function mostrarToast(mensaje) {
+    let toast = document.createElement("div");
+    toast.className = "toast";
+    toast.innerText = mensaje;
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.classList.add("show"); }, 100);
+    setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
