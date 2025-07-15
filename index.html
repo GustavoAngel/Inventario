@@ -14,7 +14,14 @@
     </script>
 </head>
 <body>
-    <h1>Inventario de Productos Terminados</h1>
+    <header id="app-header" style="background: #4DC0B5; color: #fff; display: flex; align-items: center; padding: 12px 16px; font-family: 'Segoe UI', Arial, sans-serif; font-size: 1.5rem; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 101;">
+        <svg style="height: 32px; width: 32px; margin-right: 12px;" viewBox="0 0 36 36" fill="#fff">
+            <circle cx="18" cy="18" r="18" fill="#fff" opacity="0.15"/>
+            <path d="M25 18h-4v10h-4V18h-3v-4h3v-2.5C17 9.57 18.57 8 21.5 8H25v4h-2.5C21.22 12 21 12.22 21 12.5V14h4l-1 4z" fill="#fff"/>
+        </svg>
+        <span id="header-title">Inventario de Productos Terminados</span>
+    </header>
+  
 
     <section class="pantalla" id="pantalla-productos">
         <h2>Agregar Producto</h2>
@@ -109,27 +116,7 @@
     <button onclick="borrarBaseDeDatos()" style="display: none;">Borrar Base de Datos</button>
 
     <nav class="mobile-nav">
-        <ul style="display: contents;"> <li class="nav-item">
-                <a href="#pantalla-productos" class="nav-link" data-target="pantalla-productos">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                    </svg>
-                    <span>Productos</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#pantalla-movimientos" class="nav-link" data-target="pantalla-movimientos">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="17" y1="7" x2="7" y2="17"></line>
-                        <polyline points="17 17 7 17 7 7"></polyline>
-                        <line x1="7" y1="7" x2="17" y2="17"></line>
-                        <polyline points="7 17 17 17 17 7"></polyline>
-                    </svg>
-                    <span>Movimientos</span>
-                </a>
-            </li>
+        <ul style="display: contents;"> 
             <li class="nav-item">
                 <a href="#pantalla-inventario" class="nav-link" data-target="pantalla-inventariomain">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -142,6 +129,30 @@
                     <span>Inventario</span>
                 </a>
             </li>
+
+            <li class="nav-item">
+                <a href="#pantalla-productos" class="nav-link" data-target="pantalla-productos">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                    <span>Productos</span>
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a href="#pantalla-movimientos" class="nav-link" data-target="pantalla-movimientos">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="17" y1="7" x2="7" y2="17"></line>
+                        <polyline points="17 17 7 17 7 7"></polyline>
+                        <line x1="7" y1="7" x2="17" y2="17"></line>
+                        <polyline points="7 17 17 17 17 7"></polyline>
+                    </svg>
+                    <span>Movimientos</span>
+                </a>
+            </li>
+
             <li class="nav-item">
                 <a href="#pantalla-comparacion" class="nav-link" data-target="pantalla-inventarios-realizados">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
