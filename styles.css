@@ -85,3 +85,52 @@ button:hover {
     background-color: #2196F3;
     color: white;
 }
+
+        .mobile-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #ffffff;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 5px 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            list-style: none;
+        }
+
+        .nav-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #8e8e93; /* Color gris para íconos y texto inactivos */
+            padding: 8px 12px;
+            font-size: 11px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link svg {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 4px;
+        }
+
+        /* --- Estado Activo --- */
+        .nav-link.active {
+            color: #007aff; /* Color azul para el ítem activo */
+        }
+
+        .pantalla {
+    display: none;
+    padding: 1rem;
+}
+
+.pantalla.visible {
+    display: block;
+}

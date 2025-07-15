@@ -16,7 +16,7 @@
 <body>
     <h1>Inventario de Productos Terminados</h1>
 
-    <section>
+    <section class="pantalla" id="pantalla-productos">
         <h2>Agregar Producto</h2>
         <select id="movimiento-categoria-producto">
             <option value="Helados">Helados</option>
@@ -33,12 +33,18 @@
         <button onclick="agregarProducto()">Agregar</button>
     </section>
 
-    <section>
+    <section class="pantalla" id="pantalla-inventariomain">
         <h2>Inventario</h2>
         <div id="lista-productos"></div>
+        <section  >
+            <h2>Realizar Inventario Físico</h2>
+            <button onclick="mostrarPantallaInventario()">Iniciar Inventario</button>
+            <div id="pantalla-inventario" class="tiles-container"></div>
+            <button onclick="finalizarInventario()">Finalizar Inventario</button>
+        </section>
     </section>
 
-    <section>
+    <section class="pantalla" id="pantalla-movimientos">
         <h2>Registrar Movimiento</h2>
         <select id="movimiento-producto"></select>
         <select id="movimiento-tipo">
@@ -48,24 +54,21 @@
         </select>
         <input id="movimiento-cantidad" type="number" placeholder="Cantidad">
         <button onclick="registrarMovimiento()">Registrar</button>
+        <div >
+            <h2>Historial de Movimientos</h2    >
+            <div id="historial-movimientos"></div>
+        </div>
     </section>
 
-    <section>
-        <h2>Historial</h2>
-        <div id="historial-movimientos"></div>
+    <section class="pantalla" id="pantalla-historialmovimientos">
+        <!-- <h2>Historial</h2>
+        <div id="historial-movimientos"></div> -->
     </section>
 
-    <section>
-        <h2>Realizar Inventario Físico</h2>
-        <button onclick="mostrarPantallaInventario()">Iniciar Inventario</button>
-        <div id="pantalla-inventario" class="tiles-container"></div>
-        <button onclick="finalizarInventario()">Finalizar Inventario</button>
-    </section>
 
-     <button onclick="borrarBaseDeDatos()">Borrar Base de Datos</button>
-    <button onclick="navegar()">Moviles</button> 
 
-    <section>
+
+    <section class="pantalla" id="pantalla-comparacion">
             <h2>Comparar Inventarios</h2>
             <label>Fecha 1 (ej. 2025-07-14):</label>
             <input type="date" id="fecha1">
@@ -73,12 +76,14 @@
             <input type="date" id="fecha2">
             <button onclick="compararInventarios(document.getElementById('fecha1').value, document.getElementById('fecha2').value)">Comparar</button>
 
-            <div id="resultado-comparacion"></div>
     </section>
 
-    <section>
+    <section class="pantalla" id="pantalla-inventarios-realizados">
+
     <h2>Inventarios Realizados</h2>
-    <div id="lista-inventarios-realizados" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+    <div id="lista-inventarios-realizados" style="display: flex; flex-wrap: wrap; gap: 10px;">
+
+    </div>
 
     <div style="margin-top: 20px;">
         <h3>Comparar Inventarios</h3>
@@ -99,8 +104,56 @@
 
         <div id="resultado-comparacion" style="margin-top: 20px;"></div>
     </div>
-</section>
+    </section>
 
+    <button onclick="borrarBaseDeDatos()">Borrar Base de Datos</button>
+
+    <nav class="mobile-nav">
+        <ul style="display: contents;"> <li class="nav-item">
+                <a href="#pantalla-productos" class="nav-link" data-target="pantalla-productos">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                    <span>Productos</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#pantalla-movimientos" class="nav-link" data-target="pantalla-movimientos">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="17" y1="7" x2="7" y2="17"></line>
+                        <polyline points="17 17 7 17 7 7"></polyline>
+                        <line x1="7" y1="7" x2="17" y2="17"></line>
+                        <polyline points="7 17 17 17 17 7"></polyline>
+                    </svg>
+                    <span>Movimientos</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#pantalla-inventario" class="nav-link" data-target="pantalla-inventariomain">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="9" y1="15" x2="15" y2="15"></line>
+                        <line x1="9" y1="19" x2="15" y2="19"></line>
+                        <polyline points="7 11 9 13 13 9"></polyline>
+                    </svg>
+                    <span>Inventario</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#pantalla-comparacion" class="nav-link" data-target="pantalla-inventarios-realizados">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="20" x2="12" y2="10"></line>
+                        <line x1="18" y1="20" x2="18" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="16"></line>
+                    </svg>
+                    <span>Comparar</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 
     <footer>
         <p>© 2025 Inventario Heladería</p>

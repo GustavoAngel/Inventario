@@ -490,3 +490,15 @@ function compararInventariosPorID(id1, id2) {
     };
 }
 
+function mostrarPantalla(id) {
+    document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('visible'));
+    document.getElementById(id).classList.add('visible');
+}
+
+ document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const target = link.getAttribute('data-target');
+            mostrarPantalla(target);
+        });
+    });

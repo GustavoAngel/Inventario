@@ -3,73 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Documento Nuevo</title>
-        <style>
+    <title>App de Inventario</title>
+    <style>
+        /* --- Estilos Generales --- */
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
+            padding-bottom: 80px; /* Espacio para la barra de navegación fija */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
         }
-        #menu {
+
+        /* --- Estilos para las Secciones --- */
+        .pantalla {
+            padding: 20px;
+            min-height: 100vh; /* Para que ocupen toda la pantalla y se vea el cambio */
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* --- Estilos de la Barra de Navegación Móvil --- */
+        .mobile-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #ffffff;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
             display: flex;
-            flex-direction: row;
             justify-content: space-around;
+            padding: 5px 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            list-style: none;
+        }
+
+        .nav-link {
+            display: flex;
+            flex-direction: column;
             align-items: center;
-            background-color: #1976d2;
-            padding: 0.5em 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            justify-content: center;
+            text-decoration: none;
+            color: #8e8e93; /* Color gris para íconos y texto inactivos */
+            padding: 8px 12px;
+            font-size: 11px;
+            transition: color 0.3s ease;
         }
-        #menu button {
-            flex: 1 1 0;
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 1.1em;
-            padding: 0.8em 0.2em;
-            cursor: pointer;
-            transition: background 0.2s;
+
+        .nav-link svg {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 4px;
         }
-        #menu button:active,
-        #menu button:focus {
-            background: #1565c0;
-            outline: none;
-        }
-        @media (max-width: 600px) {
-            #menu {
-                flex-direction: column;
-                padding: 0.2em 0;
-            }
-            #menu button {
-                font-size: 1em;
-                padding: 1em 0;
-                width: 100%;
-            }
+
+        /* --- Estado Activo --- */
+        .nav-link.active {
+            color: #007aff; /* Color azul para el ítem activo */
         }
     </style>
+
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js');
+        }
+    </script>
+
 </head>
 <body>
-    <nav id="menu">
-        <button onclick="mostrarPantalla('pantalla-productos')">Productos</button>
-        <button onclick="mostrarPantalla('pantalla-movimientos')">Movimientos</button>
-        <button onclick="mostrarPantalla('pantalla-inventario')">Inventario</button>
-        <button onclick="mostrarPantalla('pantalla-comparacion')">Comparación</button>
-    </nav>
 
-    <section id="pantalla-productos" class="pantalla hidden">
-        <!-- Formulario para agregar productos -->
-    </section>
+    <section id="pantalla-productos" class="pantalla">
+        <h2>📦 Productos</h2>
+            <!-- <h2>Agregar Producto</h2> -->
+            <select id="movimiento-categoria-producto">
+                <option value="Helados">Helados</option>
+                <option value="Paletas-crema">Paletas Crema</option>
+                <option value="Paletas-agua">Paletas Agua</option>
+                <option value="Paletas-chica">Paletas Chica</option>
+                <option value="Bebidas">Bebidas</option>
+                <option value="Otros">Otros</option>
+            </select>
+            <input id="producto-nombre" type="text" placeholder="Nombre del producto">
+            <input id="producto-precio-venta" type="text" placeholder="Precio venta">
+            <!-- <input id="producto-nombre" type="text" placeholder="Nombre del producto"> -->
+            <input id="producto-stock" type="number" placeholder="Stock inicial">
+            <button onclick="agregarProducto()">Agregar</button>
+        </section>
 
     <section id="pantalla-movimientos" class="pantalla hidden">
-        <!-- Formulario para registrar movimientos -->
-    </section>
+        <h2>↔️ Movimientos</h2>
+        <select id="movimiento-producto"></select>
+        <select id="movimiento-tipo">
+            <option value="entrada">Entrada</option>
+            <option value="salida">Salida</option>
+            <option value="merma">Merma</option>
+        </select>
+        <input id="movimiento-cantidad" type="number" placeholder="Cantidad">
+        <button onclick="registrarMovimiento()">Registrar</button>
+        </section>
 
     <section id="pantalla-inventario" class="pantalla hidden">
-        <!-- Pantalla de tiles de inventario -->
-    </section>
+        <h2>📋 Inventario</h2>
+                
+        <div id="lista-productos"></div>
+        </section>
 
     <section id="pantalla-comparacion" class="pantalla hidden">
-        <!-- Pantalla para listar y comparar inventarios -->
-    </section>
+        <h2>📊 Comparación</h2>
+        </section>
+
+    <nav class="mobile-nav">
+        <ul style="display: contents;"> <li class="nav-item">
+                <a href="#pantalla-productos" class="nav-link" data-target="pantalla-productos">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                    <span>Productos</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#pantalla-movimientos" class="nav-link" data-target="pantalla-movimientos">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="17" y1="7" x2="7" y2="17"></line>
+                        <polyline points="17 17 7 17 7 7"></polyline>
+                        <line x1="7" y1="7" x2="17" y2="17"></line>
+                        <polyline points="7 17 17 17 17 7"></polyline>
+                    </svg>
+                    <span>Movimientos</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#pantalla-inventario" class="nav-link" data-target="pantalla-inventario">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="9" y1="15" x2="15" y2="15"></line>
+                        <line x1="9" y1="19" x2="15" y2="19"></line>
+                        <polyline points="7 11 9 13 13 9"></polyline>
+                    </svg>
+                    <span>Inventario</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#pantalla-comparacion" class="nav-link" data-target="pantalla-comparacion">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="20" x2="12" y2="10"></line>
+                        <line x1="18" y1="20" x2="18" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="16"></line>
+                    </svg>
+                    <span>Comparar</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.pantalla');
+
+            // --- Función para cambiar de pantalla ---
+            function showScreen(targetId) {
+                // Ocultar todas las secciones
+                sections.forEach(section => {
+                    section.classList.add('hidden');
+                });
+
+                // Mostrar la sección correcta
+                const targetSection = document.getElementById(targetId);
+                if (targetSection) {
+                    targetSection.classList.remove('hidden');
+                }
+            }
+            
+            // --- Función para actualizar el estado activo del link ---
+            function updateActiveLink(activeLink) {
+                 // Quitar la clase 'active' de todos los links
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                });
+
+                // Añadir 'active' al link clickeado
+                activeLink.classList.add('active');
+            }
+
+            // --- Añadir Event Listeners a los links ---
+            navLinks.forEach(link => {
+                link.addEventListener('click', function (event) {
+                    event.preventDefault(); // Prevenir el comportamiento por defecto del ancla
+                    
+                    const targetId = this.dataset.target;
+                    
+                    showScreen(targetId);
+                    updateActiveLink(this);
+                });
+            });
+
+            // --- Estado Inicial ---
+            // Activar el primer link y mostrar la primera pantalla al cargar la página
+            const initialLink = document.querySelector('.nav-link');
+            if(initialLink){
+                updateActiveLink(initialLink);
+                showScreen(initialLink.dataset.target);
+            }
+        });
+    </script>
+
 </body>
 </html>
