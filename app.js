@@ -526,7 +526,7 @@ function registrarGasto() {
 
     let txn = db.transaction("gastos", "readwrite");
     txn.objectStore("gastos").add(gasto);
-
+    mostrarToast("Gasto registrado correctamente.");
     txn.oncomplete = () => {
         listarGastosPorRango();
         document.getElementById("gasto-descripcion").value = "";
